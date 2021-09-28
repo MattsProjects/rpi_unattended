@@ -1,0 +1,6 @@
+[EMAIL]
+EMAIL_ADD_FROM=someusername@gmail.com
+EMAIL_ADD_FROM_PASSWORD=somepassword
+EMAIL_ADD_TO=someotherusername@gmail.com
+EMAIL_ADD_TO_PHONE=somephonenumber@mms.att.net
+SSID1=somewifiname

@@ -1,0 +1,10 @@
+[Unit]
+Description=Show Weather
+After=multi-user.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/rpi_unattended/startweather.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,35 @@
+#!/bin/bash
+# wifiseeker
+# This script checks the wifi connection periodically and attempts reconnection if needed.
+# Copyright 2015-2021 matt.breit@gmail.com
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+exec 1> >(logger -s -t $(basename $0)) 2>&1
+while true
+do
+	echo "$(date)"
+	echo 1 | sudo tee /home/matt/projects/communications/wifiseekerstatus
+	sleep 5s
+	if [[ $(who | grep 'pts') = '' ]]; then # check if anyone is ssh'd in. If so, skip seeking.
+		wget -q --tries=10 --timeout=20 -O --spider http://google.com > /dev/null # try to access the internet
+		if [[ $? -eq 0 ]]; then
+			echo "Online. No seek necessary." # we can access the internet
+		else	
+			echo "Offline. Attempting reconnection..." # we cannot access it
+			sudo /usr/local/bin/rpi_unattended/spinupwifi.sh
+		fi
+	else
+		echo "User is connected. Skipping wifi seek..."
+	fi
+	echo 0 | sudo tee /usr/local/bin/rpi_unattended/wifiseekerstatus
+	sleep 10m # sleep 10 minutes
+done

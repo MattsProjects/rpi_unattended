@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{f9b5b3ad-7131-4c0c-8bc7-63e3428ad210}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>checkpower.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="config.txt" />
+    <Content Include="icons.txt" />
+    <Content Include="icons\clear_night.png" />
+    <Content Include="icons\cloudy.png" />
+    <Content Include="icons\fog.png" />
+    <Content Include="icons\mostly_cloudy.png" />
+    <Content Include="icons\partly_cloudy.png" />
+    <Content Include="icons\rain.png" />
+    <Content Include="icons\rain_snow.png" />
+    <Content Include="icons\scattered_tstorms.png" />
+    <Content Include="icons\shutdown.jpg" />
+    <Content Include="icons\snow.png" />
+    <Content Include="icons\stars.png" />
+    <Content Include="icons\sunny.png" />
+    <Content Include="icons\t-showers.png" />
+    <Content Include="icons\t-storms2.png" />
+    <Content Include="icons\thunderstorms.png" />
+    <Content Include="icons\tornado.png" />
+    <Content Include="icons\unknown.png" />
+    <Content Include="icons\windy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="checkpower.py" />
+    <Compile Include="icon_defs.py" />
+    <Compile Include="reportpower.py" />
+    <Compile Include="startupmailer.py" />
+    <Compile Include="systemstatus.py" />
+    <Compile Include="unplug2reboot.py" />
+    <Compile Include="unplug2shutdown.py" />
+    <Compile Include="weather.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="icons" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>

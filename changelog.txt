@@ -1,0 +1,236 @@
+RPi_unattended CHANGELOG
+
+TODO LIST:
+====================================================================================================================================
+
+CHANGE LOG:
+====================================================================================================================================
+
+[Sat 30 Jun 2018]
+- commented out bottom lines of /etc/rsyslog.conf due to a bug I found.
+- still trying to prevent occasional freezing of weather app...
+- moved radar download and ip address check to updateweather(). now it only freezes at :00, so the problem must be in update weather.
+
+[Tue 7 Jun 2018]
+- created unplug2reboot
+- modified checkpower to set rtc alarm and wakeup schedule when needed, off otherwise.
+
+[Mon 6 Jun 2018]
+- Massive overhaul to replace PicoUPS with Pijuice:
+-- Updated to Raspbian Jessie
+-- Migrated rc.local scripts to systemd services in /etc/systemd/system (rc.local isn't really used anymore)
+-- Various updates to weather script to support pijuice and running even in case of no network detection
+-- Weather script now shows ip address as green (internet reachable), orange (not reachable), red (error)
+-- Updates to unplug2shutdown to support PiJuice
+-- checkpower.py script  introduced with PiJuice (when usb power lost, shut down and periodically wake up for a little bit to check)
+-- Added RTC support from Pijuice (apparently systemd-timesync updates the time automatically when NTP is available)
+
+[Sat 26 Nov 2017]
+- changed batpercentage calculation in ~/projects/weather/weather.systemstatus.py to match firmware f6 values.
+
+[Wed 22 Nov 2017]
+- Now turning off lcd backlight on power down when still plugged in. Temporarily done by editing /etc/rc0.d/K10halt script.
+
+[Mon 20 Nov 2017]
+- Updated pico firmware to 0xf6, testing pico's 'stay alive' watchdog to help fix 'mysterious freezes/shutdowns'. See stayalive.sh
+- Enabled logrotation for /var/log/rclocal.log. See /etc/logrotate.d/rclocal.
+
+[Thu 30 Mar 2017]
+- updated pico firmware to 0x31, changed systemstatus.py to 4.4v from 4.26 to reflect new voltage level to get to 100%
+
+[Sun 19 mar 2017]
+- Updated Pico Firmware to 0x30, and programmed all leds off (no more blinking UPS led at night :)).
+- Minor change to weather.systemstatus.py: script now creates real file and saves it for radar image, then displays it. I have a funny feeling
+that the 'mystery freezes' might be due to the radar image. Before, a filestream was created directly from the url, and I don't know what happens
+if the url doesn't work. In the new case, it should always display radar.jpg, even if it wasn't updated. We'll see...
+
+[Wed 8 mar 2017]
+- created powersaver script to combine all of the on/off scripts in power/powersaving.
+- minor edit to spinup wifi to do networking stop/start, ifdown instead of ifconfig wlan0 down, and log everything to syslog.
+- symlinked all of my scripts to /home/matt/bin and /usr/local/bin. I might centralize the location of all the scripts I've written...
+- added to all bash scripts (exec 1> >(logger -s -t $(basename $0)) 2>&1) to log everything to syslog (wifiseeker no longer uses wifiseeker.log)
+
+[Tuesday 7 Mar 2017]
+- cleaned up some scripts & logs. Most notable is powerstatestatus, spinupwifi, and rc.local. Added startup sms message to systemmailer.
+
+[Monday 6 Mar 2017]
+- Installed mutt and merged mailers into headless/systemmailer.sh. mailx and uuencode didn't work, since iphone can't read uuencoded attachments.
+- systemmailer.sh can take in command line arguments startup, shutdown, powerlost, powerrestored, and custom to send emails.
+- Mailer subsystems is as follows:
+  Startupmailer: systemmailer startup is run in rc.local.
+  Shutdownmailer: init.d/shutdownmailer daemon calls /usr/local/bin/shutdownmailer, which calls systemmailer shutdown.
+  Powerlostmailer: powerlostmailer script is run in rc.local, which calls systemmailer powerlost/powerrestorred.
+
+[Sunday 5 mar 2017]
+- Changed mailers. Bootup is startupmailer.py in rc.local. Shutdown is /init.d/shutdownmailer (status checked in rc.local). Powerlost is powerlostmailer in rc.local
+- Todo: see if this can be cleaned up a little more
+
+[Saturday 4 mar 2017]
+- big cleanup of rc.local. Not doing direct commands there anymore. instead loading scripts to do everything. Most notable is adoption of spinupwifi.sh.
+- figured out how to run things in the background, but start them with delay. eg: in rc.local, bootup mail starts up before end, but waits 10s before sending to catch it all.
+
+[Monday 27 feb 2017]
+- Alertmailer script now calls checkpower.py, dumps the output to a log, and sends the log along with the mail on the shutdown mail
+
+[Sunday 26 feb 2017]
+- installed mpack to send attachments via email from commandline.
+- installed dataplicity to access rpi over internet (dataplicity.com)
+
+[Saturday 25 Feb 2017]
+- big update: created systemstatus.py out of weather.picoups.py. displays pico things, etc. several hours went into this
+- wifiseeker now writes status to file (idle or seeking). systemstatus polls file to display status
+- removed 'internet access' check from systemstatus.py. pinging google caused big lag in script if offline. not really needed anyway.
+
+[Monday 20 Feb 2017]
+- created alertmailer program to send email on main power lost/restored, and shutdown. see /usr/local/bin/alertmailer and /etc/init.d/alertmailer
+- created weather.picoups.py (replaces weather.py on startup). Now display system status via pico ups i2c commands.
+- weather now starts by rc.local calling startweather.sh, which will redirect any output to ~/log/weather.log
+- updated Rc.local the other day to add iphone hotspot
+- testing /communications/wifiseeker in rc.local which hopefully will try to reconnect to internet every 10 minutes (via spinupwifi.sh).
+
+[Monday 16 Feb 2017]
+- Changed a lot in the last few weeks, might not remember it all.
+- Added pico ups hat as backup battery.
+- wrote scripts for turning off backlight, usb ports, pi leds, hdmi port. all for power saving if need be.
+- changed rc local to setup wifi communications first before anything else.
+- wrote spinupwifi.sh script for standalone wifi setup.
+- created ~/shutdown.sh script to power down pi by signalling ups pico to go into file safe shut down (fssd) routine.
+- disabled hawkeye script from starting on boot (really, I don't use a webcam with this unit enough).
+- installed ssmtp so that pi will send an email if it shuts down.
+- cleaned up rc.local logging (4 nov todo).
+- installed hardware watchdog (and chkconfig).
+
+[Friday 4 Nov]
+- Starting cleaning up rc.local (cleaner console output, etc.).
+* todo: clean up rc.local logging
+
+[Thursday 3 Nov]
+- Got new wifi dongle (ew-7811un), and switched from adhoc fallback to access point using this site: http://www.daveconroy.com/turn-your-raspberry-pi-into-a-wifi-hotspot-with-edimax-nano-usb-ew-7811un-rtl8188cus-chipset/
+
+[Wednesday 2 Nov]
+- Did an apt-get update and apt-get upgrade. PiTFT appears to be working, despite adafruit site warning... good? :)
+
+[Saturday 29 Oct]
+- cleanup: removed boinc
+- cleanup: removed emacs
+
+[Thursday 27 Oct]
+- Modified rc.local to scan for known wifi networks three times. Sometimes it didn't pick up known networks. Makes it more reliable.
+- Changed back to running unplug2shutdown with sudo in rc.local. Wasn't working when not running as sudo. related to two instances?
+- change from last week forgot to mention: changed hostname to raspberrypi2.
+
+[Tuesday 25 Oct]
+- backed up SD card image to linux PC at work (32GB!!).
+- uninstalled and removed tonido (part of cleanup for now)
+- Marking the todo "migrate from user pi to user matt" complete. I don't see anything else that needs to be done here (ps aux shows no pi)
+- cleanup: added timeout to startup_mailer.py smtplib.smtp. It just tried to connect forever in the background. Now it dies after 30 sec.
+- cleanup: removed sudo references from rc.local. Scripts are run as root there anyway. Sudo caused two instances of each process!
+- cleanup: removed /opt/PiTfTWeather
+- got shellinbox working. had to copy self signed cert from /var/lib/shellinabox to ~/, chmod 775, copy to win pc, and import into FF. then add exception. bleh.
+
+[Monday 24 Oct]
+- cleaned up weather.py to handle shutdowns more gracefully. it now catches sigterm and keystrokes and doesn't leave the tft hanging.
+
+[Friday 21 Oct]
+- organized the home folder, moving main projects into /home/matt/projects folders and /home/matt/log, etc.
+- installed ntpdate (trying to fix non-syncing clock at work. probably firewall block).
+- attempted to setup hotspot instead of adhoc for fallback, but my trendnet wifi adapter doesn't support it.
+- boot fail fix: sudo update-rc.d dhcpcd remove to stop dhcp server from running at boot (we only run it later if fallback adhoc is needed).
+- boot fail fix: sudo /etc/init.d/update-rc.d isc-dhcp-server remove to stop 2nd instance of dhcp server from running at boot. same reason as above
+- boot warning fix: update-rc.d cgroup-bin remove. Cgroups was never enabled in kernel, so this script just exits anyway.
+- manually upgraded rpimonitor (sudo apt-get upgrade would wipe out the kernel patch supporting the TFT display)
+
+[Thursday 20 Oct]
+- Spent the week refining the weather script to startup on boot. Now runs from rc.local like others.
+- Installed screen for multiple terminals
+* todo:  Need to make the wifi fall back routine more robust. Should set itself up as a hotspot instead of adhoc. check out hostapd.
+
+[Friday 14 Oct 2016]
+- Installed adafruit 2.8" TFT screen. Pibrella conflicted. Commented out references to boot.py in /etc/rc.local
+- modified the startupmailer.py script to send bootlogs for rc.local, dmesg, and syslog
+- found code where i redirected rc.local: http://serverfault.com/questions/103501/how-can-i-fully-log-all-bash-scripts-actions
+* todo: auto login to console and startup screen (so I can ssh in, take control and 'clone' ssh terminal on local lcd)
+
+[Sunday 9 Aug]
+- todo3: Added code to take wlan0 down, then up again if adhoc ip not found. still can get stuck in yellow light + no adhoc tho...
+- Moved email with ip address script to last entry
+- cleaned up rc.local to use connectionlevel
+- changed rc.local to append /var/log/rclocal log, not overwrite it. >> vs. >
+
+[Saturday 1 Aug]
+- Removed BOINC from startup due to high CPU load (sudo update-rc.d boinc-client remove)
+- add shutdown button & lights on pibrella in boot.py. press button, yellow light fades, reboot. hold for 3 sec, red fades, shutdown
+
+[Friday 31 July]
+- Installed Seti@home BOINC
+
+[Thursday 30 July]
+- moved rc.local log to /var/log/rclocal.log
+- set pibrella button to reboot system (and renamed boot script bootup.py
+- installed psutil for python (access cpu time, ip adddresses, etc).
+- submitted pibrella github issue "can i have two processes access pibrella at once?
+- changed emailip address in rc.local to matt.breit@gmail.com
+
+[Wednesday 29 July]
+- Added Pibrella and indicatorlights.py script in rc.local to show state of bootup wifi (green-taternet, yellow-adhoc, red-none)
+- wifi indicator lights can be cleared by pressing big red button (to save power) :)
+- removed auto wlan0 from /etc/network/interfaces (was preventing the hotplugging of wlan0)
+- modded case to fit pibrella
+- moved unplug2shutdown to first spot in rc.local (failsafe in case of problems later in script)
+- changed vnc resolution to 1366x768
+
+[Tuesday 28 July]
+- removed all /home/<user>/.vnc entries and resintalled tight vnc under matt. this worked!
+- removed the vncboot script in /etc/init.d, and replaced with rc.local entry. is this better?
+- added code at the top of rc.local to log the script actions into /log.out file.
+
+[Monday 27 July]
+- added startup_mailer.py and entry into rc.local. doesn't quite work though...
+- Fixed hawkeye (hostname = * in config file). http://taterpi:8887 goes to webcam
+- Set shellinabox to 8886 (and updated rpimonitor to use 8887 and 8886, because it's conviniently close to homepage at 8888
+- Had to reset vnc to pi user. Vnc didn't work when used under user matt...
+- fixed startup_mailer.py script. will now email wlan and/or eth ip addresses reliably. ip route list was upside down from example
+- cleaned up /etc/rc.local to show clearly what is going on in this script
+
+[Sunday 26 July 2015, 17:08]
+- created matt account (we should do everything from this point under matt, not pi)
+- copied /home/pi to home/matt
+- disabled root ssh by editing PermitRootLogin in /etc/ssh/sshd_config
+- modified vncboot to start as matt
+- modified /etc/rpimonitor/daemon.conf to start as matt
+- added matt to same groups as pi (usermod -a -G adm,dialout,cdrom,sudo,audio,video,plugdev,games,users,netdev,input,indiecity matt)
+- got shellinabox working on port 7435 (although there is a certificate warning that it is using out of date encryption. ok for now)
+- installed Hakeye
+
+[Saturday 25 July 2015, 13:43]
+- set root password to <redacted>
+
+[Friday 24 July 2015, 11:59:59 PM]
+- Installed unplug2shutodown.py script in /etc/rc.local. Safely shuts down pi when specific usb device is unplugged (white usb drive)
+  https://claudiodangelis.com/2013/how-i-shutdown-my-raspberrypi/
+
+[Thursday 23 July 2015, 11:59:59 PM]
+- migrated to new SD card (used gparted on linux machine to move settings partition to far right (end), and expand root to full size.
+
+[Wednesday 22 July 2015, 06:20:59 PM]
+- fixed the stuck at 192.168.2.98 issue. commented wifi settings in /etc/dhcpcd.conf
+- this also fixed the issue of adhoc fallback not working when eth0 is dhcp. eth0 & wlan0 set to dhcp, and adhoc fallback works!
+- installed bootlogd. see bootlog file at /var/log/boot
+
+[Wednesday 22 July 2015, 09:54:20 AM]
+- reset eth0 and wlan0 and wlan1 to dhcp (adhoc test failed)
+
+[tuesday 21 july 2015]
+- completed Adhoc fall back setup.
+- installed rpi-monitor (http://taterpi:8888. (i set "taterpi" as ip in  /etc/rpimonitor/daemon.conf, in case I change pi's name later)
+
+[Monday 20 July 2015, 03:59:56 PM]
+- Set static IP 192.168.2.99
+- Set locales
+- added to rastrack
+- installed speedtest-cli
+- setup vnc server start on boot (password: raspberr) limited to 8
+- setup tonido start on boot (http://taterpi:10001)
+- setup samba (for hostname visibility with static IP and later filesharing with windows)
+- apt-get upgrade
+- installed wifi adapter

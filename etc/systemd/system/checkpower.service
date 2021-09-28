@@ -1,0 +1,10 @@
+[Unit]
+Description=Check Power
+After=multi-user.target
+
+[Service]
+Type=forking
+ExecStart=/usr/local/bin/rpi_unattended/startcheckpower.sh &
+
+[Install]
+WantedBy=multi-user.target

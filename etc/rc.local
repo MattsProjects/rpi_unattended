@@ -1,0 +1,148 @@
+#!/bin/bash
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+#. /lib/lsb/init-functions
+
+# setup logging
+#exec 3>&1 4>&2
+#trap 'exec 2>&4 1>&3' 0 1 2 3
+#exec 1>>/var/log/rclocal.log 2>&1 # exec 1>> to append log, 1> to overwrite it
+
+# color support
+#RED='\033[0;31m' # red
+#GREEN='\033[0;32m' # green
+#BLUE='\033[0;36m' # blue
+#NC='\033[0m' # No Color
+
+#echo ""
+#echo "" >&3
+#echo "=================================="
+#echo "==================================" >&3
+#echo "[Start] /etc/rc.local" # print to log
+#echo -e "[${BLUE}Start${NC}] /etc/rc.local" >&3 # Print to screen
+
+# sleep 10 on jessie because rc.local is executed too soon 
+#sleep 10s
+
+# start up wifi routine
+#log_begin_msg "Establishing Wifi connection..." >&3
+#echo "--> Establishing Wifi connection..."
+#sudo /usr/local/bin/rpi_unattended/spinupwifi.sh
+#log_end_msg $? >&3
+
+# In case communication is impossible, allow for shutdown of system when specific device is removed (see unplug2shutdown --configure)
+#log_begin_msg "Starting unplug2shutdown.py..." >&3
+#echo "--> Starting unplug2shutdown.py..."
+# for some reason this must run as sudo to work (two instances needed?)
+#python /usr/local/bin/rpi_unattended/unplug2shutdown.py &
+#sudo python /usr/local/bin/rpi_unattended/unplug2shutdown.py &
+#log_end_msg $? >&3
+
+# pijuic initialization
+#log_begin_msg "Initializing PiJuice..." >&3
+#echo "--> Initializing PiJuice..."
+#sudo python /usr/local/bin/rpi_unattended/power/pijuice/bootupinit.py
+#log_end_msg $? >&3
+
+# wait for pico ups battery backup to boot up
+#log_begin_msg "Waiting for pico ups to boot up..." >&3
+#echo "--> Waiting for pico ups to boot up..."
+#sudo /usr/local/bin/rpi_unattended/PiModules/waitforpico
+#log_end_msg $? >&3
+
+# establish hardware realtime clock on pico ups
+#log_begin_msg "Setting system time from RTC..." >&3
+#echo "--> Setting system time from RTC..."
+#sudo echo ds1307 0x68 > /sys/class/i2c-adapter/i2c-1/new_device
+#echo $(sudo hwclock -s)
+#echo $(date)
+#log_end_msg $? >&3
+
+# display pico ups status
+#log_begin_msg "Checking power..." >&3
+#echo "--> Checking Power..."
+#sleep 5s
+#python /usr/local/bin/rpi_unattended/power/PiModules/pico_status/checkpower_rclocal.py
+#log_end_msg $? >&3
+
+# start VNC Server
+#log_begin_msg "Starting vncserver..." >&3
+#echo "--> Starting vncserver..."
+#sudo /usr/local/bin/rpi_unattended/startvncserver
+#log_end_msg $? >&3
+
+# enable backlight control of TFT screen
+#log_begin_msg "Testing TFT Backlight..." >&3
+#echo "--> Testing TFT Backlight..."
+#sleep 1s
+#sudo /usr/local/bin/rpi_unattended/backlightoff
+#sleep 1s
+#sudo /usr/local/bin/rpi_unattended/power/powersaving/powersaver backlighton
+#log_end_msg $? >&3
+
+# spin up the wifiseeker in case we're disconnected from the internet
+#log_begin_msg "Starting wifiseeker..." >&3
+#echo "--> Starting wifiseeker..."
+#sudo /usr/local/bin/rpi_unattended/communications/wifiseeker &
+#log_end_msg $? >&3
+
+# startup alertmailer to send email if power disconnect/reconnect is detected by pico ups
+#log_begin_msg "Starting powerlostmailer..." >&3
+#echo "--> Starting powerlostmailer..."
+#sudo /usr/local/bin/rpi_unattended/headless/powerlostmailer &
+#log_end_msg $? >&3
+
+# check that the shutdown mailer is running (log begin and end messages displayed by init script)
+#sudo /etc/init.d/shutdownmailer status >&3
+
+# startup the system status application with a 10s delay, so we can review the bootscreen before stealing it.
+#log_begin_msg "Starting System Status Monitor..." >&3
+#echo "--> Starting System Status Monitor..."
+#sudo sleep 10 && python /usr/local/bin/rpi_unattended/headless/systemstatus.py &
+#log_end_msg $? >&3
+
+# startup the weather application with a 10s delay, so we can review the bootscreen before stealing it.
+#log_begin_msg "Starting Weather Monitor..." >&3
+#echo "--> Starting Weather Monitor..."
+#sudo sleep 10 && /usr/local/bin/rpi_unattended/weather/startweather.sh
+#log_end_msg $? >&3
+
+# send email with IP address and logs (with 10 second delay, so we catch the output of anything after this script.)
+#log_begin_msg "Sending bootup notification mail..." >&3
+#echo "--> Sending bootup notification mail..."
+#sudo sleep 10 && python /usr/local/bin/rpi_unattended/headless/startupmailer.py &
+sudo sleep 10 && /usr/local/bin/rpi_unattended/systemmailer.sh startup &
+#log_end_msg $? >&3
+
+# info section
+#echo -e "[${BLUE}info${NC}] Useful information below..." >&3
+
+# Tell the user where the log file is
+#echo "Log file: /var/log/rclocal.log" >&3
+#echo "--> Log file: /var/log/rclocal.log"
+
+# Display the ip addresses of the system
+#echo "--> Show ip addresses"
+#sudo /usr/local/bin/rpi_unattended/communications/showip >&3
+sudo /usr/local/bin/rpi_unattended/showip
+
+# disable TFT screen blanking (on jessie only)
+#sudo sh -c "TERM=linux setterm -blank 0 >/dev/tty0"
+
+# end
+#echo -e "[${BLUE}END${NC}] /etc/rc.local" >&3
+#echo "[END] /etc/rc.local script."
+#echo "=================================" >&3
+#echo "================================="
+
+exit 0
+
